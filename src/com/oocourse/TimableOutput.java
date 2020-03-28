@@ -37,7 +37,7 @@ public class TimableOutput {
     public static long println(Object obj, PrintStream stream) {
         TimableOutput.ObjectWithTimestamp value = new TimableOutput.ObjectWithTimestamp(obj);
         System.out.println("Got out: " + obj.toString());
-        stream.println(value.getTimestamp());
+        stream.println(value);
         return value.getTimestamp();
     }
 
