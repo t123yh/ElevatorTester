@@ -1,0 +1,140 @@
+package com.__oo__.runner;
+
+import com.oocourse.elevator1.ElevatorInput;
+import com.oocourse.elevator1.EndOfRequest;
+import com.oocourse.elevator1.PersonRequest;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
+
+public class InputSequence {
+    public static class StringCommand {
+        public PersonRequest request;
+
+        public String toString() {
+            return request.toString();
+        }
+    }
+
+    public static class DelayCommand {
+        public int millis;
+    }
+
+    private List<Object> commands;
+
+    public InputSequence(List<Object> cmd) {
+        commands = new ArrayList<>(cmd);
+    }
+
+    public String toString() {
+        double currentTime = 0;
+        StringBuilder builder = new StringBuilder();
+        for (Object obj : commands) {
+            if (obj instanceof StringCommand) {
+                builder.append(String.format("[%.3f]%s\n", currentTime, obj.toString()));
+            } else if (obj instanceof DelayCommand) {
+                currentTime += ((DelayCommand) obj).millis / 1000.0;
+            }
+        }
+        return builder.toString();
+    }
+
+    public Runnable feed() {
+        return new Runnable() {
+            @Override
+            public void run() {
+                ElevatorInput.InputQueue.clear();
+                for (Object obj : commands) {
+                    if (obj instanceof StringCommand) {
+                        try {
+                            System.out.println("Feed in: " + obj.toString());
+                            ElevatorInput.InputQueue.put(((StringCommand) obj).request);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (obj instanceof DelayCommand) {
+                        try {
+                            Thread.sleep(((DelayCommand) obj).millis);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                try {
+                    ElevatorInput.InputQueue.put(new EndOfRequest());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+    }
+
+    private static int generateInt(HashSet<Integer> current) {
+        int result;
+        do {
+            result = rnd.nextInt(100000);
+        } while (current.contains(result));
+        current.add(result);
+        return result;
+    }
+
+    static final Random rnd = new Random();
+    static final int minFloor = 1, maxFloor = 15;
+
+    private static int generateFloor() {
+        return rnd.nextInt(maxFloor - minFloor + 1) + minFloor;
+    }
+
+    private static PersonRequest generateRequest(HashSet<Integer> idList) {
+        int pid = generateInt(idList);
+        int fromFloor, toFloor;
+        do {
+            fromFloor = generateFloor();
+            toFloor = generateFloor();
+        } while (fromFloor == toFloor);
+        return new PersonRequest(fromFloor, toFloor, pid);
+    }
+
+    static final int maxTime = 10 * 1000;
+
+    public static InputSequence generate() {
+        HashSet<Integer> idList = new HashSet<>();
+
+        List<Object> cmds = new ArrayList<>();
+        int totalTime = 0;
+        boolean started = false;
+        while (totalTime < maxTime) {
+            if (!started || rnd.nextDouble() > 0.4) {
+                started = true;
+                int count = rnd.nextDouble() > 0.2 ? 1 : rnd.nextInt(4);
+                for (int i = 0; i < count; i++) {
+                    StringCommand cmd = new StringCommand();
+                    cmd.request = generateRequest(idList);
+                    cmds.add(cmd);
+                }
+            } else {
+                int count = rnd.nextDouble() > 0.1 ? 1 : 3;
+                int maxDelay = rnd.nextDouble() > 0.1 ? 500 : 50;
+                for (int i = 0; i < count; i++) {
+                    int delay = rnd.nextInt(maxDelay) * 10 + 100;
+                    DelayCommand cmd = new DelayCommand();
+                    cmd.millis = delay;
+                    totalTime += cmd.millis;
+                    cmds.add(cmd);
+                }
+            }
+        }
+        StringCommand cmd = new StringCommand();
+        cmd.request = generateRequest(idList);
+        cmds.add(cmd);
+
+        return new InputSequence(cmds);
+    }
+
+    public List<PersonRequest> getRequests() {
+        return commands.stream().filter(x -> x instanceof StringCommand).map(x -> ((StringCommand) x).request).collect(Collectors.toList());
+    }
+}
