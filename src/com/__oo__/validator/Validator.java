@@ -14,6 +14,8 @@ public class Validator {
     public static boolean validate(List<PersonRequest> requests, String[] logLines) {
         TreeMap<Integer, PersonReq> personReqs = new TreeMap<>();
         boolean judge;
+        double time = 0;
+        boolean begin = false;
 
         //get_id_list
         for (PersonRequest req : requests) {
@@ -27,9 +29,17 @@ public class Validator {
         for (String str : logLines) {
             String temp = CopeString(str);
             String[] op = temp.split("-");
-            String move = op[0];
+            double getTime = Double.parseDouble(op[0]);
+            if (!begin) {
+                time = getTime;
+            }
+            String move = op[1];
             if (move.equals("ARRIVE")) {
-                int arriveFloor = Integer.parseInt(op[1]);
+                int arriveFloor = Integer.parseInt(op[2]);
+                //time
+                if(getTime - time < 0.399999 && begin) {
+                    judge = false;
+                }
                 if (elevator.getState() == DoorOpen) {
                     judge = false;
                 } else {
@@ -39,9 +49,14 @@ public class Validator {
                         judge = false;
                     }
                 }
+                time = getTime;
             } else if (move.equals("IN")) {
-                int id = Integer.parseInt(op[1]);
-                int fromFloor = Integer.parseInt(op[2]);
+                int id = Integer.parseInt(op[2]);
+                int fromFloor = Integer.parseInt(op[3]);
+                //time
+                if(getTime < time) {
+                    judge = false;
+                }
                 //open in wrong floor
                 if (fromFloor != elevator.getLoc()) {
                     judge = false;
@@ -57,8 +72,12 @@ public class Validator {
                     judge = false;
                 }
             } else if (move.equals("OUT")) {
-                int id = Integer.parseInt(op[1]);
-                int toFloor = Integer.parseInt(op[2]);
+                int id = Integer.parseInt(op[2]);
+                int toFloor = Integer.parseInt(op[3]);
+                //time
+                if(getTime < time) {
+                    judge = false;
+                }
                 //close in wrong floor
                 if (toFloor != elevator.getLoc()) {
                     judge = false;
@@ -74,7 +93,11 @@ public class Validator {
                     judge = false;
                 }
             } else if (move.equals("OPEN")) {
-                int openFloor = Integer.parseInt(op[1]);
+                int openFloor = Integer.parseInt(op[2]);
+                //time
+                if(getTime < time) {
+                    judge = false;
+                }
                 if (openFloor != elevator.getLoc()) {
                     judge = false;
                 }
@@ -82,8 +105,12 @@ public class Validator {
                     judge = false;
                 }
                 elevator.changeState();
+                time = getTime;
             } else if (move.equals("CLOSE")) {
-                int closeFloor = Integer.parseInt(op[1]);
+                int closeFloor = Integer.parseInt(op[2]);
+                if(getTime - time < 0.399999) {
+                    judge = false;
+                }
                 if (closeFloor != elevator.getLoc()) {
                     judge = false;
                 }
@@ -91,8 +118,12 @@ public class Validator {
                     judge = false;
                 }
                 elevator.changeState();
+                time = getTime;
             } else {
                 judge = false;
+            }
+            if(!begin) {
+                begin = true;
             }
         }
 
@@ -108,14 +139,11 @@ public class Validator {
     }
 
     public static String CopeString(String str) {
-        int i = 0;
-        while (i < str.length()) {
-            if (str.charAt(i) == ']') {
-                break;
-            }
-            i++;
-        }
-        return str.substring(i + 1);
+        String temp = str;
+        String temp1 = temp.replace("[","");
+        String temp2 = temp1.replace("]","-");
+        String temp3 = temp2.replace(" ","");
+        return temp3;
     }
 
 }

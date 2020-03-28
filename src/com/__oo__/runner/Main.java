@@ -75,7 +75,7 @@ public class Main {
             e.printStackTrace();
         }
 
-        String[] request = TimableOutput.output.toString().split("\n");
+        String[] request = TimableOutput.output.toString().replace("\r", "").split("\n");
         boolean result = Validator.validate(seq.getRequests(), request);
         if (result) {
             System.out.println("Pass!");
