@@ -2,6 +2,7 @@ package com.__oo__.runner;
 
 import com.__oo__.validator.Validator;
 import com.oocourse.TimableOutput;
+import com.oocourse.elevator1.ElevatorInput;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -39,50 +40,57 @@ public class Main {
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException {
-        InputSequence seq = InputSequence.generate();
-        String timestamp =  LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH_mm_ss"));
-        writeFile("testdata-" + timestamp + ".txt", seq.toString());
-
         addDir(args[0]);
         Method mainMethod = Class.forName(args[1]).getMethod("main", String[].class);
-        Runnable main = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    mainMethod.invoke(null, new Object[] {new String[0]});
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                } catch (InvocationTargetException e) {
-                    e.printStackTrace();
+        int failCount = 0;
+        while (true) {
+            TimableOutput.output.reset();
+            ElevatorInput.InputQueue.clear();
+            InputSequence seq = InputSequence.generate();
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH_mm_ss"));
+
+            Runnable main = new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        mainMethod.invoke(null, new Object[]{new String[0]});
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
                 }
+            };
+
+            Thread mainThread = new Thread(main);
+            Thread feedThread = new Thread(seq.feed());
+
+            mainThread.start();
+            feedThread.start();
+
+            try {
+                mainThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        };
+            try {
+                feedThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-        Thread mainThread = new Thread(main);
-        Thread feedThread = new Thread(seq.feed());
-
-        mainThread.start();
-        feedThread.start();
-
-        try {
-            mainThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        try {
-            feedThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        String[] request = TimableOutput.output.toString().replace("\r", "").split("\n");
-        boolean result = Validator.validate(seq.getRequests(), request);
-        if (result) {
-            System.out.println("Pass!");
-        } else {
-            System.out.println("Fail!");
+            String[] request = TimableOutput.output.toString().replace("\r", "").split("\n");
+            boolean result = Validator.validate(seq.getRequests(), request);
+            if (result) {
+                System.out.println("Pass!");
+            } else {
+                System.out.println("Fail!");
+                failCount++;
+                writeFile("input-" + timestamp + ".txt", seq.toString());
+                writeFile("result-" + timestamp + ".txt", String.join("\n", request));
+            }
+            System.out.println("Total failures: " + failCount);
         }
 
-        writeFile("result-" + timestamp + ".txt", String.join("\n", request));
     }
 }
