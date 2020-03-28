@@ -8,6 +8,7 @@ public class PersonReq {
     private int toFloor;
     private boolean fromRight;
     private boolean toRight;
+    private boolean finished;
 
     public PersonReq(PersonRequest req) {
         this.id = req.getPersonId();
@@ -15,6 +16,7 @@ public class PersonReq {
         this.toFloor = req.getToFloor();
         this.fromRight = false;
         this.toRight = false;
+        this.finished = false;
     }
 
     public boolean getFromRight() {
@@ -26,18 +28,32 @@ public class PersonReq {
     }
 
     public void judgeFrom(int fromFloor) {
-        if (this.fromFloor != fromFloor) {
+        if(!this.finished) {
+            if (this.fromFloor != fromFloor) {
+                this.fromRight = false;
+                return;
+            }
+            this.fromRight = true;
+        } else {
             this.fromRight = false;
-            return;
         }
-        this.fromRight = true;
+
     }
 
     public void judgeTo(int toFloor) {
-        if (this.toFloor != toFloor) {
+        if(!this.finished) {
+            if (!this.fromRight) {
+                this.toRight = false;
+                return;
+            }
+            if (this.toFloor != toFloor) {
+                this.toRight = false;
+                return;
+            }
+            this.toRight = true;
+            this.finished = true;
+        } else {
             this.toRight = false;
-            return;
         }
-        this.toRight = true;
     }
 }
