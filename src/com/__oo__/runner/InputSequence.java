@@ -3,15 +3,21 @@ package com.__oo__.runner;
 import com.oocourse.elevator1.ElevatorInput;
 import com.oocourse.elevator1.EndOfRequest;
 import com.oocourse.elevator1.PersonRequest;
+import jdk.internal.util.xml.impl.Input;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
 public class InputSequence {
     public static class StringCommand {
+        public StringCommand(PersonRequest request) {
+            this.request = request;
+        }
+
         public PersonRequest request;
 
         public String toString() {
@@ -20,6 +26,10 @@ public class InputSequence {
     }
 
     public static class DelayCommand {
+        public DelayCommand(int millis) {
+            this.millis = millis;
+        }
+
         public int millis;
     }
 
@@ -27,6 +37,71 @@ public class InputSequence {
 
     public InputSequence(List<Object> cmd) {
         commands = new ArrayList<>(cmd);
+    }
+
+    public static InputSequence parseFromText(List<String> lines) {
+        double currentTime = 0;
+        List<Object> cmdList = new LinkedList<>();
+
+        for (String str : lines) {
+            if (str.isEmpty())
+                continue;
+            str = str.trim();
+            int i = 0;
+            String temp = "";
+            double time;
+            int id;
+            int fromFloor;
+            int toFloor;
+            if (str.charAt(i) == '[') {
+                i++;
+            }
+            while (str.charAt(i) == ' ') {
+                i++;
+            }
+            while (str.charAt(i) != ']') {
+                temp += str.charAt(i);
+                i++;
+            }
+            i++;
+            time = Double.parseDouble(temp);///////////time
+            temp = "";
+            while (str.charAt(i) != '-') {
+                temp += str.charAt(i);
+                i++;
+            }
+            id = Integer.parseInt(temp);//////////////id
+            i++;
+            while (str.charAt(i) != '-') {
+                i++;
+            }
+            i++;
+            temp = "";
+            while (str.charAt(i) != '-') {
+                temp += str.charAt(i);
+                i++;
+            }
+            i++;
+            fromFloor = Integer.parseInt(temp);//////////fromFloor
+            while (str.charAt(i) != '-') {
+                temp += str.charAt(i);
+                i++;
+            }
+            i++;
+            temp = "";
+            while (i < str.length()) {
+                temp += str.charAt(i);
+                i++;
+            }
+            toFloor = Integer.parseInt(temp);
+            if (time - currentTime > 0.00001) {
+                cmdList.add(new DelayCommand((int) ((time - currentTime) * 1000)));
+                currentTime = time;
+            }
+            cmdList.add(new StringCommand(new PersonRequest(fromFloor, toFloor, id)));
+        }
+
+        return new InputSequence(cmdList);
     }
 
     public String toString() {
@@ -111,8 +186,7 @@ public class InputSequence {
                 started = true;
                 int count = rnd.nextDouble() > 0.2 ? 1 : rnd.nextInt(4);
                 for (int i = 0; i < count; i++) {
-                    StringCommand cmd = new StringCommand();
-                    cmd.request = generateRequest(idList);
+                    StringCommand cmd = new StringCommand(generateRequest(idList));
                     cmds.add(cmd);
                 }
             } else {
@@ -120,15 +194,13 @@ public class InputSequence {
                 int maxDelay = rnd.nextDouble() > 0.1 ? 500 : 50;
                 for (int i = 0; i < count; i++) {
                     int delay = rnd.nextInt(maxDelay) * 10 + 100;
-                    DelayCommand cmd = new DelayCommand();
-                    cmd.millis = delay;
+                    DelayCommand cmd = new DelayCommand(delay);
                     totalTime += cmd.millis;
                     cmds.add(cmd);
                 }
             }
         }
-        StringCommand cmd = new StringCommand();
-        cmd.request = generateRequest(idList);
+        StringCommand cmd = new StringCommand(generateRequest(idList));
         cmds.add(cmd);
 
         return new InputSequence(cmds);
