@@ -62,8 +62,13 @@ public class Main {
         Thread mainThread = new Thread(main);
         Thread feedThread = new Thread(seq.feed());
 
-        mainThread.start();
         feedThread.start();
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        mainThread.start();
 
         try {
             mainThread.join();
