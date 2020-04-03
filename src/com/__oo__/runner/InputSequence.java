@@ -72,39 +72,44 @@ public class InputSequence {
             i++;
             time = Double.parseDouble(temp);///////////time
             temp = "";
-            while (str.charAt(i) != '-') {
-                temp += str.charAt(i);
+            if(number == -1) {
+                temp = str.substring(i);
+                number = Integer.parseInt(temp);
+            } else {
+                while (str.charAt(i) != '-') {
+                    temp += str.charAt(i);
+                    i++;
+                }
+                id = Integer.parseInt(temp);//////////////id
                 i++;
-            }
-            id = Integer.parseInt(temp);//////////////id
-            i++;
-            while (str.charAt(i) != '-') {
+                while (str.charAt(i) != '-') {
+                    i++;
+                }
                 i++;
-            }
-            i++;
-            temp = "";
-            while (str.charAt(i) != '-') {
-                temp += str.charAt(i);
+                temp = "";
+                while (str.charAt(i) != '-') {
+                    temp += str.charAt(i);
+                    i++;
+                }
                 i++;
-            }
-            i++;
-            fromFloor = Integer.parseInt(temp);//////////fromFloor
-            while (str.charAt(i) != '-') {
-                temp += str.charAt(i);
+                fromFloor = Integer.parseInt(temp);//////////fromFloor
+                while (str.charAt(i) != '-') {
+                    temp += str.charAt(i);
+                    i++;
+                }
                 i++;
+                temp = "";
+                while (i < str.length()) {
+                    temp += str.charAt(i);
+                    i++;
+                }
+                toFloor = Integer.parseInt(temp);
+                if (time - currentTime > 0.00001) {
+                    cmdList.add(new DelayCommand((int) ((time - currentTime) * 1000)));
+                    currentTime = time;
+                }
+                cmdList.add(new StringCommand(new PersonRequest(fromFloor, toFloor, id)));
             }
-            i++;
-            temp = "";
-            while (i < str.length()) {
-                temp += str.charAt(i);
-                i++;
-            }
-            toFloor = Integer.parseInt(temp);
-            if (time - currentTime > 0.00001) {
-                cmdList.add(new DelayCommand((int) ((time - currentTime) * 1000)));
-                currentTime = time;
-            }
-            cmdList.add(new StringCommand(new PersonRequest(fromFloor, toFloor, id)));
         }
 
         return new InputSequence(cmdList, number);
