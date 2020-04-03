@@ -2,8 +2,7 @@ package com.__oo__.runner;
 
 import com.__oo__.validator.Validator;
 import com.oocourse.TimableOutput;
-import com.oocourse.elevator1.ElevatorInput;
-import jdk.internal.util.xml.impl.Input;
+import com.oocourse.elevator2.ElevatorInput;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,7 +13,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +42,7 @@ public class Main {
     }
 
     public static boolean runTest(Method mainMethod, InputSequence seq) {
+        System.out.println(String.format("%d elevators", seq.getElevatorNum()));
         TimableOutput.output.reset();
         ElevatorInput.InputQueue.clear();
 
@@ -78,7 +77,7 @@ public class Main {
         }
 
         String[] request = TimableOutput.output.toString().replace("\r", "").split("\n");
-        return Validator.validate(seq.getRequests(), request);
+        return Validator.validate(seq.getRequests(), seq.getElevatorNum(), request);
     }
 
     public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException {

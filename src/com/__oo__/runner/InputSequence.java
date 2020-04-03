@@ -1,9 +1,8 @@
 package com.__oo__.runner;
 
-import com.oocourse.elevator1.ElevatorInput;
-import com.oocourse.elevator1.EndOfRequest;
-import com.oocourse.elevator1.PersonRequest;
-import jdk.internal.util.xml.impl.Input;
+import com.oocourse.elevator2.ElevatorInput;
+import com.oocourse.elevator2.EndOfRequest;
+import com.oocourse.elevator2.PersonRequest;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,15 +32,22 @@ public class InputSequence {
         public int millis;
     }
 
+    public int getElevatorNum() {
+        return elevatorNum;
+    }
+
+    private int elevatorNum;
     private List<Object> commands;
 
-    public InputSequence(List<Object> cmd) {
+    public InputSequence(List<Object> cmd, int num) {
         commands = new ArrayList<>(cmd);
+        elevatorNum = num;
     }
 
     public static InputSequence parseFromText(List<String> lines) {
         double currentTime = 0;
         List<Object> cmdList = new LinkedList<>();
+        int number = -1;
 
         for (String str : lines) {
             if (str.isEmpty())
@@ -101,7 +107,7 @@ public class InputSequence {
             cmdList.add(new StringCommand(new PersonRequest(fromFloor, toFloor, id)));
         }
 
-        return new InputSequence(cmdList);
+        return new InputSequence(cmdList, number);
     }
 
     public String toString() {
@@ -122,6 +128,7 @@ public class InputSequence {
             @Override
             public void run() {
                 ElevatorInput.InputQueue.clear();
+                ElevatorInput.numberOfElevators = elevatorNum;
                 for (Object obj : commands) {
                     if (obj instanceof StringCommand) {
                         try {
@@ -184,26 +191,23 @@ public class InputSequence {
         while (totalTime < maxTime) {
             if (!started || rnd.nextDouble() > 0.4) {
                 started = true;
-                int count = rnd.nextDouble() > 0.2 ? 1 : rnd.nextInt(4);
+                int count = rnd.nextDouble() > 0.3 ? 1 : rnd.nextInt(4);
                 for (int i = 0; i < count; i++) {
                     StringCommand cmd = new StringCommand(generateRequest(idList));
                     cmds.add(cmd);
                 }
             } else {
-                int count = rnd.nextDouble() > 0.1 ? 1 : 3;
-                int maxDelay = rnd.nextDouble() > 0.1 ? 500 : 50;
-                for (int i = 0; i < count; i++) {
-                    int delay = rnd.nextInt(maxDelay) * 10 + 100;
-                    DelayCommand cmd = new DelayCommand(delay);
-                    totalTime += cmd.millis;
-                    cmds.add(cmd);
-                }
+                int maxDelay = rnd.nextDouble() > 0.5 ? 200 : 50;
+                int delay = rnd.nextInt(maxDelay) * 10 + 100;
+                DelayCommand cmd = new DelayCommand(delay);
+                totalTime += cmd.millis;
+                cmds.add(cmd);
             }
         }
         StringCommand cmd = new StringCommand(generateRequest(idList));
         cmds.add(cmd);
 
-        return new InputSequence(cmds);
+        return new InputSequence(cmds, rnd.nextInt(5) + 1);
     }
 
     public List<PersonRequest> getRequests() {

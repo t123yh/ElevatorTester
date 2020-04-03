@@ -1,8 +1,7 @@
-package com.oocourse.elevator1;
+package com.oocourse.elevator2;
 
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PersonRequest {
