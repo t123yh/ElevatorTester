@@ -43,6 +43,7 @@ public class Main {
 
     public static boolean runTest(Method mainMethod, InputSequence seq) {
         System.out.println(String.format("%d elevators", seq.getElevatorNum()));
+        long start = System.currentTimeMillis();
         TimableOutput.output.reset();
         ElevatorInput.InputQueue.clear();
 
@@ -81,6 +82,8 @@ public class Main {
             e.printStackTrace();
         }
 
+        long end = System.currentTimeMillis();
+        System.out.println(String.format("%d ms elapsed.", end - start));
         String[] request = TimableOutput.output.toString().replace("\r", "").split("\n");
         return Validator.validate(seq.getRequests(), seq.getElevatorNum(), request);
     }
