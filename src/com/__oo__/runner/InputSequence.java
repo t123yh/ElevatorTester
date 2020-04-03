@@ -113,6 +113,7 @@ public class InputSequence {
     public String toString() {
         double currentTime = 0;
         StringBuilder builder = new StringBuilder();
+        builder.append(String.format("[0.000]%d\n", elevatorNum));
         for (Object obj : commands) {
             if (obj instanceof StringCommand) {
                 builder.append(String.format("[%.3f]%s\n", currentTime, obj.toString()));
