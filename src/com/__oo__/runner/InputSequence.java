@@ -87,12 +87,11 @@ public class InputSequence {
                 }
                 i++;
                 temp = "";
-                while (str.charAt(i) != '-') {
+                while (str.charAt(i) != 'T') {
                     temp += str.charAt(i);
                     i++;
                 }
-                i++;
-                fromFloor = Integer.parseInt(temp);//////////fromFloor
+                fromFloor = Integer.parseInt(temp.substring(0,temp.length()-1));//////////fromFloor
                 while (str.charAt(i) != '-') {
                     temp += str.charAt(i);
                     i++;

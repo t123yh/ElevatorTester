@@ -186,15 +186,16 @@ public class Validator {
         String temp = str;
         String temp1 = temp.replace(" ","");
         String temp2 = temp1.replace("[","");
-        String temp3 = temp2.replace("]","-");
+        String temp3 = temp2.replace("]"," ");
+        String temp4 = temp3.replace("-"," ");
         int i = 1;
-        while(i < temp3.length()) {
-            if(temp3.charAt(i - 1) == '-' && temp3.charAt(i) == '-') {
-                temp3 = temp3.substring(0, i-1) + " " + temp3.substring(i);
+        while(i < temp4.length()) {
+            if(temp4.charAt(i - 1) == ' ' && temp4.charAt(i) == ' ') {
+                temp4 = temp4.substring(0, i) + "-" + temp4.substring(i + 1);
             }
             i++;
         }
-        return temp3.replace("-"," ");
+        return temp4;
     }
 
     public static String getReq(String str) {
