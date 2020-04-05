@@ -75,11 +75,19 @@ public class Validator {
                 if(getTime - elevator.getTime() < 0.39999) {
                     judge = false;
                 }
+                //wrong floor
+                if(arriveFloor < -3 || arriveFloor > 16 || arriveFloor == 0) {
+                    judge = false;
+                }
                 //about move
                 if(elevator.getState() == DoorOpen) {
                     judge = false;
                 } else {
                     if(elevator.getLoc() - arriveFloor == 1||elevator.getLoc() - arriveFloor == -1) {
+                        elevator.setLoc(arriveFloor);
+                    } else if(elevator.getLoc() == 1 && arriveFloor == -1) {
+                        elevator.setLoc(arriveFloor);
+                    } else if(elevator.getLoc() == -1 && arriveFloor == 1) {
                         elevator.setLoc(arriveFloor);
                     } else {
                         judge = false;
