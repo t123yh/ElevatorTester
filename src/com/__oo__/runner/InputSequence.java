@@ -170,10 +170,14 @@ public class InputSequence {
     }
 
     static final Random rnd = new Random();
-    static final int minFloor = 1, maxFloor = 15;
+    static final int minFloor = -3, maxFloor = 15;
 
     private static int generateFloor() {
-        return rnd.nextInt(maxFloor - minFloor + 1) + minFloor;
+        int floor;
+        do {
+            floor = rnd.nextInt(maxFloor - minFloor + 1) + minFloor;
+        } while (floor == 0);
+        return floor;
     }
 
     private static PersonRequest generateRequest(HashSet<Integer> idList) {
