@@ -206,6 +206,8 @@ public class InputSequence {
                     StringCommand cmd = new StringCommand(generateRequest(idList));
                     cmds.add(cmd);
                 }
+            } else if (rnd.nextDouble() > 0.9) {
+                break;
             } else {
                 int maxDelay = rnd.nextDouble() > 0.5 ? 200 : 50;
                 int delay = rnd.nextInt(maxDelay) * 10 + 100;
