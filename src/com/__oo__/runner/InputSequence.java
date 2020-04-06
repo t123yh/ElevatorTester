@@ -137,7 +137,8 @@ public class InputSequence {
                 for (Object obj : commands) {
                     if (obj instanceof StringCommand) {
                         try {
-                            System.out.println("Feed in: " + obj.toString());
+                            if (Main.verbose)
+                                System.out.println("Feed in: " + obj.toString());
                             ElevatorInput.InputQueue.put(((StringCommand) obj).request);
                         } catch (InterruptedException e) {
                             e.printStackTrace();

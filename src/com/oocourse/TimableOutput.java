@@ -1,5 +1,7 @@
 package com.oocourse;
 
+import com.__oo__.runner.Main;
+
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
@@ -36,7 +38,8 @@ public class TimableOutput {
 
     public static long println(Object obj, PrintStream stream) {
         TimableOutput.ObjectWithTimestamp value = new TimableOutput.ObjectWithTimestamp(obj);
-        System.out.println("Got out: " + obj.toString());
+        if (Main.verbose)
+            System.out.println("Got out: " + obj.toString());
         stream.println(value);
         return value.getTimestamp();
     }
