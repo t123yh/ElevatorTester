@@ -43,6 +43,7 @@ public class Validator {
         Elevator elevator = null;
         for (String str : logLines) {
             String temp = CopeString(str);
+            // System.out.println("Processing line " + temp);
             String[] op = temp.split(" ");
             double getTime = Double.parseDouble(op[0]);
             String move = op[1];

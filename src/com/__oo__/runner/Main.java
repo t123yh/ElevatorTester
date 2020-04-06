@@ -44,7 +44,13 @@ public class Main {
         writer.close();
     }
 
-    public static boolean runTest(Method mainMethod, InputSequence seq) {
+    enum RunTestResult {
+        Passed,
+        Failed,
+        ValidationFailed
+    }
+
+    public static RunTestResult runTest(Method mainMethod, InputSequence seq) {
         TimableOutput.output.reset();
         ElevatorInput.InputQueue.clear();
 
@@ -83,7 +89,15 @@ public class Main {
             e.printStackTrace();
         }
         String[] request = TimableOutput.output.toString().replace("\r", "").split("\n");
-        return Validator.validate(seq.getRequests(), seq.getElevatorNum(), request);
+        try {
+            boolean result = Validator.validate(seq.getRequests(), seq.getElevatorNum(), request);
+            if (result)
+                return RunTestResult.Passed;
+            else
+                return RunTestResult.Failed;
+        } catch (Exception ex) {
+            return RunTestResult.ValidationFailed;
+        }
     }
 
     public static Method getMainMethod(String path, String mainClass) throws ClassNotFoundException, IOException, NoSuchMethodException {
@@ -93,14 +107,10 @@ public class Main {
         return mainMethod;
     }
 
-    public static void doFileTest(Method main, String fileName) throws NoSuchMethodException, IOException, ClassNotFoundException {
+    public static RunTestResult doFileTest(Method main, String fileName) throws NoSuchMethodException, IOException, ClassNotFoundException {
         InputSequence seq = InputSequence.parseFromText(Files.readAllLines(new File(fileName).toPath()));
-        boolean result = runTest(main, seq);
-        if (result) {
-            System.out.println("Pass!");
-        } else {
-            System.out.println("Fail!");
-        }
+        RunTestResult result = runTest(main, seq);
+        return result;
     }
 
     public static void doRandomTest(String path, Method mainMethod) throws NoSuchMethodException, IOException, ClassNotFoundException {
@@ -109,14 +119,15 @@ public class Main {
             InputSequence seq = InputSequence.generate();
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH_mm_ss"));
 
-            boolean result = runTest(mainMethod, seq);
+            RunTestResult result = runTest(mainMethod, seq);
 
-            if (result) {
+            if (result == RunTestResult.Passed) {
                 System.out.println("Pass!");
             } else {
+                String failReason = result.toString();
                 System.out.println("Fail!");
                 failCount++;
-                writeFile(path, "input-" + timestamp + ".txt", seq.toString());
+                writeFile(path, String.format("input-%s-%s.txt", timestamp, failReason), seq.toString());
             }
             System.out.println("Total failures: " + failCount);
         }
@@ -130,18 +141,21 @@ public class Main {
         } else if (args[0].equals("file")) {
             verbose = true;
             Method mainMethod = getMainMethod(args[1], args[2]);
-            doFileTest(mainMethod, args[3]);
+            RunTestResult result = doFileTest(mainMethod, args[3]);
+            System.out.println(result.toString());
         } else if (args[0].equals("benchmark")) {
             verbose = false;
             Method mainMethod = getMainMethod(args[1], args[2]);
-            for(Path p : Files.list(new File(args[3]).toPath()).collect(Collectors.toList()))
+            System.out.println("hhhh");
+            for(Path p : Files.list(new File(args[3]).toPath()).sorted().collect(Collectors.toList()))
             {
+                System.out.println(String.format("%s: start", p));
                 long start = System.currentTimeMillis();
 
-                doFileTest(mainMethod, p.toString());
+                RunTestResult result = doFileTest(mainMethod, p.toString());
 
                 long end = System.currentTimeMillis();
-                System.out.println(String.format("%s: %d ms", p, end - start));
+                System.out.println(String.format("%s: %d ms (%s)", p, end - start, result.toString()));
             }
         } else if (args[0].equals("generate")) {
             InputSequence seq = InputSequence.generate();
