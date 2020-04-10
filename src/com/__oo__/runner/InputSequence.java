@@ -161,7 +161,7 @@ public class InputSequence {
     }
 
     static final Random rnd = new Random();
-    static final int minFloor = -3, maxFloor = 15;
+    static final int minFloor = -3, maxFloor = 20;
 
     private static int generateFloor() {
         int floor;
@@ -235,4 +235,5 @@ public class InputSequence {
         }
         return result;
     }
+
 }

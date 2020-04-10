@@ -28,6 +28,10 @@ public class PersonReq {
         this(req.getPersonId(), req.getFromFloor(), req.getToFloor());
     }
 
+    public int getId() {
+        return this.id;
+    }
+
     public void in(int inFloor, String inEle) {
         if(judge) {
             if(inFloor != loc) {

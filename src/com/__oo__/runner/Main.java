@@ -90,7 +90,7 @@ public class Main {
         }
         String[] request = TimableOutput.output.toString().replace("\r", "").split("\n");
         try {
-            boolean result = Validator.validate(seq.getRequests(), seq.getElevatorNum(), request);
+            boolean result = Validator.validate(seq, request);
             if (result)
                 return RunTestResult.Passed;
             else

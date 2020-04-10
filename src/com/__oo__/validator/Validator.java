@@ -1,6 +1,9 @@
 package com.__oo__.validator;
 
+import com.__oo__.runner.InputSequence;
+import com.oocourse.elevator3.ElevatorRequest;
 import com.oocourse.elevator3.PersonRequest;
+import com.oocourse.elevator3.Request;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,58 +14,59 @@ public class Validator {
 
     public static final int DoorOpen = 2;
 
-    public static boolean validate(List<PersonRequest> requests, int num, String[] logLines) {
+    public static boolean validate(InputSequence is, String[] logLines) {
         TreeMap<Integer, PersonReq> personReqs = new TreeMap<>();
-        boolean judge;
-        double time = 0;
-        boolean begin = false;
+        boolean judge = true;
+        int numOfEle = 3;
+
+        HashMap<String, Elevator> elevators = new HashMap<>();
+        Elevator elevator1 = new Elevator("A","A",0);
+        Elevator elevator2 = new Elevator("B","B",0);
+        Elevator elevator3 = new Elevator("C","C",0);
+        elevators.put(elevator1.getId(),elevator1);
+        elevators.put(elevator2.getId(),elevator2);
+        elevators.put(elevator3.getId(),elevator3);
 
         //get_id_list
-        for (PersonRequest req : requests) {
-            PersonReq pr = new PersonReq(req);
-            personReqs.put(req.getPersonId(), pr);
+        for (InputSequence.RequestWithTime requestWithTime : is.getRequests()) {
+            double time = requestWithTime.time;
+            Request req = requestWithTime.content;
+            if(req instanceof PersonRequest) {
+                PersonRequest temp = (PersonRequest)req;
+                PersonReq pr = new PersonReq(temp);
+                personReqs.put(pr.getId(), pr);
+            } else {
+                ElevatorRequest temp = (ElevatorRequest)req;
+                if(numOfEle == 3) {
+                    Elevator elevator4 = new Elevator(temp.getElevatorId(),temp.getElevatorType(),time);
+                    elevators.put(elevator4.getId(),elevator4);
+                } else if(numOfEle == 4) {
+                    Elevator elevator5 = new Elevator(temp.getElevatorId(),temp.getElevatorType(),time);
+                    elevators.put(elevator5.getId(),elevator5);
+                } else if(numOfEle == 5) {
+                    Elevator elevator6 = new Elevator(temp.getElevatorId(),temp.getElevatorType(),time);
+                    elevators.put(elevator6.getId(),elevator6);
+                } else {
+                    judge = false;
+                }
+            }
         }
 
         //judge_begin
 
-
-        //judge_begin
-        HashMap<String, Elevator> elevators = new HashMap<>();
-        Elevator elevatorA = new Elevator("A");
-        Elevator elevatorB = new Elevator("B");
-        Elevator elevatorC = new Elevator("C");
-        Elevator elevatorD = new Elevator("D");
-        Elevator elevatorE = new Elevator("E");
-        elevators.put(elevatorA.getId(),elevatorA);
-        elevators.put(elevatorB.getId(),elevatorB);
-        elevators.put(elevatorC.getId(),elevatorC);
-        elevators.put(elevatorD.getId(),elevatorD);
-        elevators.put(elevatorE.getId(),elevatorE);
-
-        judge = true;
         Elevator elevator = null;
         for (String str : logLines) {
             String temp = CopeString(str);
             // System.out.println("Processing line " + temp);
             String[] op = temp.split(" ");
             double getTime = Double.parseDouble(op[0]);
-            String move = op[1];
 
-            if(temp.charAt(temp.length()-1) == 'A'){
-                elevator = elevatorA;
-            } else if(temp.charAt(temp.length()-1) == 'B') {
-                elevator = elevatorB;
-            } else if(temp.charAt(temp.length()-1) == 'C') {
-                elevator = elevatorC;
-            } else if(temp.charAt(temp.length()-1) == 'D') {
-                elevator = elevatorD;
-            } else {
-                elevator = elevatorE;
-            }
-
-            if(temp.charAt(temp.length()-1) - 'A' > num) {
-                judge = false;
+            String eleId = op[op.length-1];
+            if(!elevators.containsKey(eleId)) {
+                judge  = false;
                 break;
+            } else {
+                elevator = elevators.get(eleId);
             }
 
             if(!elevator.ifStart()) {
@@ -70,14 +74,15 @@ public class Validator {
                 elevator.start();
             }
 
+            String move = op[1];
             if(move.equals("ARRIVE")) {
                 int arriveFloor = Integer.parseInt(op[2]);
                 //time
-                if(getTime - elevator.getTime() < 0.39999) {
+                if(getTime - elevator.getTime() < elevator.getSpeed()-0.000001) {
                     judge = false;
                 }
                 //wrong floor
-                if(arriveFloor < -3 || arriveFloor > 16 || arriveFloor == 0) {
+                if(arriveFloor < -3 || arriveFloor > 20 || arriveFloor == 0) {
                     judge = false;
                 }
                 //about move
@@ -144,7 +149,7 @@ public class Validator {
                     judge = false;
                 }
                 //open in wrong floor
-                if(openFloor != elevator.getLoc()){
+                if(openFloor != elevator.getLoc() || !elevator.canOpen(openFloor)){
                     judge = false;
                 }
                 //door already is open
@@ -182,7 +187,6 @@ public class Validator {
         return judge;
     }
 
-
     public static String CopeString(String str) {
         String temp = str;
         String temp1 = temp.replace(" ","");
@@ -197,27 +201,5 @@ public class Validator {
             i++;
         }
         return temp4;
-    }
-
-    public static String getReq(String str) {
-        String temp = str;
-        String blank = " ";
-        int i = 0;
-        while(i < temp.length()) {
-            if(temp.charAt(i) == '-' && temp.charAt(i + 1) == 'F') {
-                temp = temp.substring(0, i) + blank + temp.substring(i + 1);
-            }
-            if(temp.charAt(i) == 'M' && str.charAt(i + 1) == '-') {
-                temp = temp.substring(0, i + 1) + blank + temp.substring(i + 2);
-            }
-            if(temp.charAt(i) == '-' && temp.charAt(i + 1) == 'T') {
-                temp = temp.substring(0, i) + blank + temp.substring(i + 1);
-            }
-            if(temp.charAt(i) == 'O' && str.charAt(i + 1) == '-') {
-                temp = temp.substring(0, i + 1) + blank + temp.substring(i + 2);
-            }
-            i++;
-        }
-        return temp;
     }
 }
