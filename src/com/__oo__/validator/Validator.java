@@ -14,9 +14,9 @@ public class Validator {
 
     public static final int DoorOpen = 2;
 
-    public static boolean validate(InputSequence is, String[] logLines) {
+    public static int validate(InputSequence is, String[] logLines) {
         TreeMap<Integer, PersonReq> personReqs = new TreeMap<>();
-        boolean judge = true;
+        int judge = 0;
         int numOfEle = 3;
 
         HashMap<String, Elevator> elevators = new HashMap<>();
@@ -30,6 +30,7 @@ public class Validator {
         //get_id_list
         for (InputSequence.RequestWithTime requestWithTime : is.getRequests()) {
             double time = requestWithTime.time;
+            time /= 1000;
             Request req = requestWithTime.content;
             if(req instanceof PersonRequest) {
                 PersonRequest temp = (PersonRequest)req;
@@ -47,7 +48,7 @@ public class Validator {
                     Elevator elevator6 = new Elevator(temp.getElevatorId(),temp.getElevatorType(),time);
                     elevators.put(elevator6.getId(),elevator6);
                 } else {
-                    judge = false;
+                    judge = 1;
                 }
             }
         }
@@ -63,14 +64,14 @@ public class Validator {
 
             String eleId = op[op.length-1];
             if(!elevators.containsKey(eleId)) {
-                judge  = false;
+                judge  = 2;
                 break;
             } else {
                 elevator = elevators.get(eleId);
             }
 
             if(getTime < elevator.getStartTime()) {
-                judge = false;
+                judge = 3;
                 break;
             }
 
@@ -84,15 +85,15 @@ public class Validator {
                 int arriveFloor = Integer.parseInt(op[2]);
                 //time
                 if(getTime - elevator.getTime() < elevator.getSpeed()-0.000001) {
-                    judge = false;
+                    judge = 4;
                 }
                 //wrong floor
                 if(arriveFloor < -3 || arriveFloor > 20 || arriveFloor == 0) {
-                    judge = false;
+                    judge = 5;
                 }
                 //about move
                 if(elevator.getState() == DoorOpen) {
-                    judge = false;
+                    judge = 6;
                 } else {
                     if(elevator.getLoc() - arriveFloor == 1||elevator.getLoc() - arriveFloor == -1) {
                         elevator.setLoc(arriveFloor);
@@ -101,7 +102,7 @@ public class Validator {
                     } else if(elevator.getLoc() == -1 && arriveFloor == 1) {
                         elevator.setLoc(arriveFloor);
                     } else {
-                        judge = false;
+                        judge = 7;
                     }
                 }
                 elevator.setTime(getTime);
@@ -110,83 +111,83 @@ public class Validator {
                 int fromFloor = Integer.parseInt(op[3]);
                 //time
                 if(getTime - elevator.getTime() < 0) {
-                    judge = false;
+                    judge = 8;
                 }
                 //open in wrong floor
                 if(fromFloor != elevator.getLoc()) {
-                    judge = false;
+                    judge = 9;
                 }
                 //the door is closed but someone come in.
                 if(elevator.getState() == DoorClose){
-                    judge = false;
+                    judge = 10;
                 }
                 //judge if fromfloor is right
                 if(personReqs.containsKey(id)) {
                     personReqs.get(id).in(elevator.getLoc(), elevator.getId());
                 } else {//wrong id
-                    judge = false;
+                    judge = 11;
                 }
             } else if(move.equals("OUT")) {
                 int id = Integer.parseInt(op[2]);
                 int toFloor = Integer.parseInt(op[3]);
                 //time
                 if(getTime - elevator.getTime() < 0) {
-                    judge = false;
+                    judge = 12;
                 }
                 //close in wrong floor
                 if(toFloor != elevator.getLoc()) {
-                    judge = false;
+                    judge = 13;
                 }
                 //the door is closed but someone go out.
                 if(elevator.getState() == DoorClose){
-                    judge = false;
+                    judge = 14;
                 }
                 //judge if tofloor is right
                 if(personReqs.containsKey(id)) {
                     personReqs.get(id).out(toFloor, elevator.getId());
                 } else {//wrong id
-                    judge = false;
+                    judge = 15;
                 }
             } else if(move.equals("OPEN")) {
                 int openFloor = Integer.parseInt(op[2]);
                 //time
                 if(getTime - elevator.getTime() < 0) {
-                    judge = false;
+                    judge = 16;
                 }
                 //open in wrong floor
                 if(openFloor != elevator.getLoc() || !elevator.canOpen(openFloor)){
-                    judge = false;
+                    judge = 17;
                 }
                 //door already is open
                 if(elevator.getState() != DoorClose) {
-                    judge = false;
+                    judge = 18;
                 }
                 elevator.changeState();
                 elevator.setTime(getTime);
             } else if(move.equals("CLOSE")) {
                 int closeFloor = Integer.parseInt(op[2]);
                 if(getTime - elevator.getTime() < 0.399999) {
-                    judge = false;
+                    judge = 19;
                 }
                 if(closeFloor != elevator.getLoc()){
-                    judge = false;
+                    judge = 20;
                 }
                 if(elevator.getState() != DoorOpen) {
-                    judge = false;
+                    judge = 21;
                 }
                 elevator.changeState();
                 elevator.setTime(getTime);
             } else {
-                judge = false;
+                judge = 22;
             }
         }
 
-        if(judge == false) {
-            return false;
+        if(judge != 0) {
+            return judge;
         }
         for(PersonReq pr: personReqs.values()){
             if(!pr.isRight()) {
-                judge = false;
+                judge = 23;
             }
         }
         return judge;
