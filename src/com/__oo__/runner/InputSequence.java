@@ -23,22 +23,15 @@ public class InputSequence {
         public int millis;
     }
 
-    public int getElevatorNum() {
-        return elevatorNum;
-    }
-
-    private int elevatorNum;
     private List<Object> commands;
 
-    public InputSequence(List<Object> cmd, int num) {
+    public InputSequence(List<Object> cmd) {
         commands = new ArrayList<>(cmd);
-        elevatorNum = num;
     }
 
     public static InputSequence parseFromText(List<String> lines) {
         double currentTime = 0;
         List<Object> cmdList = new LinkedList<>();
-        int number = -1;
 
         for (String str : lines) {
             if (str.isEmpty())
@@ -47,9 +40,6 @@ public class InputSequence {
             int i = 0;
             String temp = "";
             double time;
-            int id;
-            int fromFloor;
-            int toFloor;
             if (str.charAt(i) == '[') {
                 i++;
             }
@@ -62,53 +52,71 @@ public class InputSequence {
             }
             i++;
             time = Double.parseDouble(temp);///////////time
-            temp = "";
-            if (number == -1) {
-                temp = str.substring(i);
-                number = Integer.parseInt(temp);
+            if (time - currentTime > 0.00001) {
+                cmdList.add(new DelayCommand((int) ((time - currentTime) * 1000)));
+                currentTime = time;
+            }
+            if(str.charAt(i) == 'X'){
+                ElevatorRequest eleR = parseForEle(str, i);
+                cmdList.add(eleR);
             } else {
-                while (str.charAt(i) != '-') {
-                    temp += str.charAt(i);
-                    i++;
-                }
-                id = Integer.parseInt(temp);//////////////id
-                i++;
-                while (str.charAt(i) != '-') {
-                    i++;
-                }
-                i++;
-                temp = "";
-                while (str.charAt(i) != 'T') {
-                    temp += str.charAt(i);
-                    i++;
-                }
-                fromFloor = Integer.parseInt(temp.substring(0, temp.length() - 1));//////////fromFloor
-                while (str.charAt(i) != '-') {
-                    temp += str.charAt(i);
-                    i++;
-                }
-                i++;
-                temp = "";
-                while (i < str.length()) {
-                    temp += str.charAt(i);
-                    i++;
-                }
-                toFloor = Integer.parseInt(temp);
-                if (time - currentTime > 0.00001) {
-                    cmdList.add(new DelayCommand((int) ((time - currentTime) * 1000)));
-                    currentTime = time;
-                }
-                cmdList.add(new PersonRequest(fromFloor, toFloor, id));
+                PersonRequest pR = parseForPerson(str, i);
+                cmdList.add(pR);
             }
         }
-
-        return new InputSequence(cmdList, number);
+        return new InputSequence(cmdList);
     }
 
+    public static ElevatorRequest parseForEle(String str, int i) {
+        String eleId = "";
+        String eleType = "";
+        while (str.charAt(i) != '-') {
+            eleId += str.charAt(i);
+            i++;
+        }
+        eleType = "" + str.charAt(str.length()-1);
+        ElevatorRequest eleR = new ElevatorRequest(eleId, eleType);
+        return eleR;
+    }
+
+    public static PersonRequest parseForPerson(String str, int i) {
+        int id;
+        int fromFloor;
+        int toFloor;
+        String temp = "";
+        while (str.charAt(i) != '-') {
+            temp += str.charAt(i);
+            i++;
+        }
+        id = Integer.parseInt(temp);//////////////id
+        i++;
+        while (str.charAt(i) != '-') {
+            i++;
+        }
+        i++;
+        temp = "";
+        while (str.charAt(i) != 'T') {
+            temp += str.charAt(i);
+            i++;
+        }
+        fromFloor = Integer.parseInt(temp.substring(0, temp.length() - 1));//////////fromFloor
+        while (str.charAt(i) != '-') {
+            temp += str.charAt(i);
+            i++;
+        }
+        i++;
+        temp = "";
+        while (i < str.length()) {
+            temp += str.charAt(i);
+            i++;
+        }
+        toFloor = Integer.parseInt(temp);
+        PersonRequest pr = new PersonRequest(id, fromFloor, toFloor);
+        return pr;
+    }
     public String toString() {
         double currentTime = 0;
         StringBuilder builder = new StringBuilder();
-        builder.append(String.format("[0.000]%d\n", elevatorNum));
         for (Object obj : commands) {
             if (obj instanceof Request) {
                 builder.append(String.format("[%.3f]%s\n", currentTime, obj.toString()));
@@ -124,7 +132,6 @@ public class InputSequence {
             @Override
             public void run() {
                 ElevatorInput.InputQueue.clear();
-                ElevatorInput.numberOfElevators = elevatorNum;
                 for (Object obj : commands) {
                     if (obj instanceof Request) {
                         try {
@@ -210,7 +217,7 @@ public class InputSequence {
         Request cmd = generateRequest(idList);
         cmds.add(cmd);
 
-        return new InputSequence(cmds, rnd.nextInt(5) + 1);
+        return new InputSequence(cmds);
     }
 
     public static class RequestWithTime {
