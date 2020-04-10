@@ -1,8 +1,11 @@
 package com.__oo__.runner;
 
-import com.oocourse.elevator2.ElevatorInput;
-import com.oocourse.elevator2.EndOfRequest;
-import com.oocourse.elevator2.PersonRequest;
+import com.__oo__.validator.PersonReq;
+import com.oocourse.elevator3.ElevatorInput;
+import com.oocourse.elevator3.ElevatorRequest;
+import com.oocourse.elevator3.EndOfRequest;
+import com.oocourse.elevator3.PersonRequest;
+import com.oocourse.elevator3.Request;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -12,18 +15,6 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 public class InputSequence {
-    public static class StringCommand {
-        public StringCommand(PersonRequest request) {
-            this.request = request;
-        }
-
-        public PersonRequest request;
-
-        public String toString() {
-            return request.toString();
-        }
-    }
-
     public static class DelayCommand {
         public DelayCommand(int millis) {
             this.millis = millis;
@@ -72,7 +63,7 @@ public class InputSequence {
             i++;
             time = Double.parseDouble(temp);///////////time
             temp = "";
-            if(number == -1) {
+            if (number == -1) {
                 temp = str.substring(i);
                 number = Integer.parseInt(temp);
             } else {
@@ -91,7 +82,7 @@ public class InputSequence {
                     temp += str.charAt(i);
                     i++;
                 }
-                fromFloor = Integer.parseInt(temp.substring(0,temp.length()-1));//////////fromFloor
+                fromFloor = Integer.parseInt(temp.substring(0, temp.length() - 1));//////////fromFloor
                 while (str.charAt(i) != '-') {
                     temp += str.charAt(i);
                     i++;
@@ -107,7 +98,7 @@ public class InputSequence {
                     cmdList.add(new DelayCommand((int) ((time - currentTime) * 1000)));
                     currentTime = time;
                 }
-                cmdList.add(new StringCommand(new PersonRequest(fromFloor, toFloor, id)));
+                cmdList.add(new PersonRequest(fromFloor, toFloor, id));
             }
         }
 
@@ -119,7 +110,7 @@ public class InputSequence {
         StringBuilder builder = new StringBuilder();
         builder.append(String.format("[0.000]%d\n", elevatorNum));
         for (Object obj : commands) {
-            if (obj instanceof StringCommand) {
+            if (obj instanceof Request) {
                 builder.append(String.format("[%.3f]%s\n", currentTime, obj.toString()));
             } else if (obj instanceof DelayCommand) {
                 currentTime += ((DelayCommand) obj).millis / 1000.0;
@@ -135,11 +126,11 @@ public class InputSequence {
                 ElevatorInput.InputQueue.clear();
                 ElevatorInput.numberOfElevators = elevatorNum;
                 for (Object obj : commands) {
-                    if (obj instanceof StringCommand) {
+                    if (obj instanceof Request) {
                         try {
                             if (Main.verbose)
                                 System.out.println("Feed in: " + obj.toString());
-                            ElevatorInput.InputQueue.put(((StringCommand) obj).request);
+                            ElevatorInput.InputQueue.put(((Request) obj));
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -203,7 +194,7 @@ public class InputSequence {
                 started = true;
                 int count = rnd.nextDouble() > 0.3 ? 1 : rnd.nextInt(4);
                 for (int i = 0; i < count; i++) {
-                    StringCommand cmd = new StringCommand(generateRequest(idList));
+                    Request cmd = generateRequest(idList);
                     cmds.add(cmd);
                 }
             } else if (rnd.nextDouble() > 0.9) {
@@ -216,13 +207,13 @@ public class InputSequence {
                 cmds.add(cmd);
             }
         }
-        StringCommand cmd = new StringCommand(generateRequest(idList));
+        Request cmd = generateRequest(idList);
         cmds.add(cmd);
 
         return new InputSequence(cmds, rnd.nextInt(5) + 1);
     }
 
     public List<PersonRequest> getRequests() {
-        return commands.stream().filter(x -> x instanceof StringCommand).map(x -> ((StringCommand) x).request).collect(Collectors.toList());
+        return commands.stream().filter(x -> x instanceof PersonRequest).map(x -> (PersonRequest) x).collect(Collectors.toList());
     }
 }

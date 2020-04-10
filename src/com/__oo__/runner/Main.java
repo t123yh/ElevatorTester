@@ -2,7 +2,7 @@ package com.__oo__.runner;
 
 import com.__oo__.validator.Validator;
 import com.oocourse.TimableOutput;
-import com.oocourse.elevator2.ElevatorInput;
+import com.oocourse.elevator3.ElevatorInput;
 
 import java.io.BufferedWriter;
 import java.io.File;

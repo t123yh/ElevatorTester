@@ -1,10 +1,10 @@
-package com.oocourse.elevator2;
+package com.oocourse.elevator3;
 
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-public class PersonRequest {
+public class PersonRequest extends Request {
     private static final int MAX_FLOOR = 15;
     private static final int MIN_FLOOR = 1;
     private final int fromFloor;
@@ -16,7 +16,7 @@ public class PersonRequest {
     private static final BigInteger INT_MIN = BigInteger.valueOf(-2147483648L);
 
     private static boolean isValidFloor(Integer floor) {
-        return floor != null && floor >= 1 && floor <= 15;
+        return floor != null && floor >= -3 && floor <= 20;
     }
 
     public PersonRequest(int fromFloor, int toFloor, int personId) {

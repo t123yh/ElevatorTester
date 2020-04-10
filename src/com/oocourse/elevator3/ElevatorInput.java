@@ -1,4 +1,4 @@
-package com.oocourse.elevator2;
+package com.oocourse.elevator3;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -7,7 +7,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ElevatorInput implements Closeable {
-    public static BlockingQueue<PersonRequest> InputQueue = new LinkedBlockingQueue<>();
+    public static BlockingQueue<Request> InputQueue = new LinkedBlockingQueue<>();
     public static int numberOfElevators = 1;
 
     public ElevatorInput() { }
@@ -16,8 +16,8 @@ public class ElevatorInput implements Closeable {
     @Override
     public void close() throws IOException { }
 
-    public PersonRequest nextPersonRequest() {
-        PersonRequest req = null;
+    public Request nextPersonRequest() {
+        Request req = null;
         while (req == null) {
             try {
                 req = InputQueue.take();

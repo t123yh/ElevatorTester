@@ -1,6 +1,6 @@
 package com.__oo__.validator;
 
-import com.oocourse.elevator2.PersonRequest;
+import com.oocourse.elevator3.PersonRequest;
 
 public class PersonReq {
     private int id;

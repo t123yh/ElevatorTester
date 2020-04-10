@@ -1,4 +1,4 @@
-package com.oocourse.elevator2;
+package com.oocourse.elevator3;
 
 public class EndOfRequest extends PersonRequest {
     public EndOfRequest() {
