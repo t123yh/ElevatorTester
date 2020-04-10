@@ -50,7 +50,7 @@ public class Main {
         ValidationFailed
     }
 
-    public static RunTestResult runTest(Method mainMethod, InputSequence seq) {
+    public static int runTest(Method mainMethod, InputSequence seq) {
         TimableOutput.output.reset();
         ElevatorInput.InputQueue.clear();
 
@@ -90,13 +90,10 @@ public class Main {
         }
         String[] request = TimableOutput.output.toString().replace("\r", "").split("\n");
         try {
-            boolean result = Validator.validate(seq, request);
-            if (result)
-                return RunTestResult.Passed;
-            else
-                return RunTestResult.Failed;
+            int jresult = Validator.validate(seq, request);
+            return jresult;
         } catch (Exception ex) {
-            return RunTestResult.ValidationFailed;
+            return -1;
         }
     }
 
@@ -107,10 +104,9 @@ public class Main {
         return mainMethod;
     }
 
-    public static RunTestResult doFileTest(Method main, String fileName) throws NoSuchMethodException, IOException, ClassNotFoundException {
+    public static int doFileTest(Method main, String fileName) throws NoSuchMethodException, IOException, ClassNotFoundException {
         InputSequence seq = InputSequence.parseFromText(Files.readAllLines(new File(fileName).toPath()));
-        RunTestResult result = runTest(main, seq);
-        return result;
+        return runTest(main, seq);
     }
 
     public static void doRandomTest(String path, Method mainMethod) throws NoSuchMethodException, IOException, ClassNotFoundException {
@@ -119,12 +115,12 @@ public class Main {
             InputSequence seq = InputSequence.generate();
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH_mm_ss"));
 
-            RunTestResult result = runTest(mainMethod, seq);
+            int result = runTest(mainMethod, seq);
 
-            if (result == RunTestResult.Passed) {
+            if (result == 0) {
                 System.out.println("Pass!");
             } else {
-                String failReason = result.toString();
+                String failReason = "fail" + Integer.toString(result);
                 System.out.println("Fail!");
                 failCount++;
                 writeFile(path, String.format("input-%s-%s.txt", timestamp, failReason), seq.toString());
@@ -141,8 +137,8 @@ public class Main {
         } else if (args[0].equals("file")) {
             verbose = true;
             Method mainMethod = getMainMethod(args[1], args[2]);
-            RunTestResult result = doFileTest(mainMethod, args[3]);
-            System.out.println(result.toString());
+            int result = doFileTest(mainMethod, args[3]);
+            System.out.println("Code: " + Integer.toString(result));
         } else if (args[0].equals("benchmark")) {
             verbose = false;
             Method mainMethod = getMainMethod(args[1], args[2]);
@@ -152,10 +148,10 @@ public class Main {
                 System.out.println(String.format("%s: start", p));
                 long start = System.currentTimeMillis();
 
-                RunTestResult result = doFileTest(mainMethod, p.toString());
+                int result = doFileTest(mainMethod, p.toString());
 
                 long end = System.currentTimeMillis();
-                System.out.println(String.format("%s: %d ms (%s)", p, end - start, result.toString()));
+                System.out.println(String.format("%s: %d ms (Code %d)", p, end - start, result));
             }
         } else if (args[0].equals("generate")) {
             InputSequence seq = InputSequence.generate();
