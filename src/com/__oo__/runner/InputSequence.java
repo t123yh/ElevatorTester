@@ -111,7 +111,7 @@ public class InputSequence {
             i++;
         }
         toFloor = Integer.parseInt(temp);
-        PersonRequest pr = new PersonRequest(id, fromFloor, toFloor);
+        PersonRequest pr = new PersonRequest(fromFloor, toFloor, id);
         return pr;
     }
     public String toString() {
