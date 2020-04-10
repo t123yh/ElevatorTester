@@ -195,16 +195,30 @@ public class InputSequence {
 
         List<Object> cmds = new ArrayList<>();
         int totalTime = 0;
+        int elevatorsAdded = 0;
         boolean started = false;
-        while (totalTime < maxTime) {
+        while (totalTime < maxTime && cmds.size() < 50) {
             if (!started || rnd.nextDouble() > 0.4) {
                 started = true;
-                int count = rnd.nextDouble() > 0.3 ? 1 : rnd.nextInt(4);
+                int count = rnd.nextDouble() > 0.5 ? 1 : rnd.nextInt(5);
                 for (int i = 0; i < count; i++) {
                     Request cmd = generateRequest(idList);
                     cmds.add(cmd);
                 }
-            } else if (rnd.nextDouble() > 0.9) {
+            } else if (rnd.nextDouble() > 0.7 && elevatorsAdded < 3) {
+                elevatorsAdded++;
+                double n = rnd.nextDouble();
+                String type;
+                if (n > 0.666) {
+                    type = "A";
+                } else if (n > 0.333) {
+                    type = "B";
+                } else {
+                    type = "C";
+                }
+                Request cmd = new ElevatorRequest("X" + Integer.toString(elevatorsAdded), type);
+                cmds.add(cmd);
+            } else if (rnd.nextDouble() > 0.95) {
                 break;
             } else {
                 int maxDelay = rnd.nextDouble() > 0.5 ? 200 : 50;
