@@ -213,7 +213,26 @@ public class InputSequence {
         return new InputSequence(cmds, rnd.nextInt(5) + 1);
     }
 
-    public List<PersonRequest> getRequests() {
-        return commands.stream().filter(x -> x instanceof PersonRequest).map(x -> (PersonRequest) x).collect(Collectors.toList());
+    public static class RequestWithTime {
+        public RequestWithTime(int time, Request content) {
+            this.time = time;
+            this.content = content;
+        }
+
+        public int time;
+        public Request content;
+    }
+
+    public List<RequestWithTime> getRequests() {
+        List<RequestWithTime> result = new ArrayList<>();
+        int time = 0;
+        for (Object obj : commands) {
+            if (obj instanceof Request) {
+                result.add(new RequestWithTime(time, (Request)obj));
+            } else if (obj instanceof DelayCommand) {
+                time += ((DelayCommand) obj).millis;
+            }
+        }
+        return result;
     }
 }
