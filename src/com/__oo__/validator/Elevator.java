@@ -39,6 +39,10 @@ public class Elevator {
         }
     }
 
+    public double getStartTime() {
+        return this.startTime;
+    }
+
     public boolean canOpen(int num) {
         if(type.equals("A")) {
             if(num > 1 && num < 15) {

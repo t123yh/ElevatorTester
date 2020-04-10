@@ -69,8 +69,13 @@ public class Validator {
                 elevator = elevators.get(eleId);
             }
 
+            if(getTime < elevator.getStartTime()) {
+                judge = false;
+                break;
+            }
+
             if(!elevator.ifStart()) {
-                elevator.setTime(getTime - 0.4);
+                elevator.setTime(getTime - 1);
                 elevator.start();
             }
 
