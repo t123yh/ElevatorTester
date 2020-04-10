@@ -16,7 +16,7 @@ public class ElevatorInput implements Closeable {
     @Override
     public void close() throws IOException { }
 
-    public Request nextPersonRequest() {
+    public Request nextRequest() {
         Request req = null;
         while (req == null) {
             try {
